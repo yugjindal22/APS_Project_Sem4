@@ -23,7 +23,7 @@ std::string NetworkParser::readFile(const std::string &filename)
 
 void NetworkParser::skipWhitespace(const std::string &jsonStr, size_t &pos)
 {
-    while (pos < jsonStr.length() && std::isspace(jsonStr[pos]))
+    while (pos < jsonStr.length() && (std::isspace(jsonStr[pos]) || jsonStr[pos] == '\n' || jsonStr[pos] == '\r'))
     {
         pos++;
     }
@@ -33,8 +33,14 @@ std::string NetworkParser::parseString(const std::string &jsonStr, size_t &pos)
 {
     skipWhitespace(jsonStr, pos);
 
-    if (pos >= jsonStr.length() || jsonStr[pos] != '"')
+    if (pos >= jsonStr.length())
     {
+        throw std::runtime_error("Unexpected end of input while parsing string");
+    }
+
+    if (jsonStr[pos] != '"')
+    {
+        std::cerr << "Debug: Expected '\"' at position " << pos << ", found '" << jsonStr[pos] << "'\n";
         throw std::runtime_error("Expected string at position " + std::to_string(pos));
     }
 
@@ -50,8 +56,40 @@ std::string NetworkParser::parseString(const std::string &jsonStr, size_t &pos)
             {
                 throw std::runtime_error("Unterminated escape sequence");
             }
+            switch (jsonStr[pos])
+            {
+            case '"':
+                result += '"';
+                break;
+            case '\\':
+                result += '\\';
+                break;
+            case '/':
+                result += '/';
+                break;
+            case 'b':
+                result += '\b';
+                break;
+            case 'f':
+                result += '\f';
+                break;
+            case 'n':
+                result += '\n';
+                break;
+            case 'r':
+                result += '\r';
+                break;
+            case 't':
+                result += '\t';
+                break;
+            default:
+                result += jsonStr[pos];
+            }
         }
-        result += jsonStr[pos];
+        else
+        {
+            result += jsonStr[pos];
+        }
         pos++;
     }
 
@@ -79,14 +117,18 @@ int NetworkParser::parseNumber(const std::string &jsonStr, size_t &pos)
 
 void NetworkParser::parseUserData(const std::string &jsonStr, size_t &pos, User *&user)
 {
+    std::cout << "Debug: Starting to parse user data at position " << pos << "\n";
     skipWhitespace(jsonStr, pos);
 
     if (pos >= jsonStr.length() || jsonStr[pos] != '{')
     {
+        std::cerr << "Debug: Expected '{' at position " << pos << ", found '"
+                  << (pos < jsonStr.length() ? jsonStr[pos] : '?') << "'\n";
         throw std::runtime_error("Expected object at position " + std::to_string(pos));
     }
 
     pos++; // Skip {
+    std::cout << "Debug: Found opening brace for user object\n";
 
     std::string id, name, location;
     int age = 0;
@@ -95,47 +137,64 @@ void NetworkParser::parseUserData(const std::string &jsonStr, size_t &pos, User 
     while (pos < jsonStr.length() && jsonStr[pos] != '}')
     {
         skipWhitespace(jsonStr, pos);
+        std::cout << "Debug: Parsing user field at position " << pos << "\n";
 
         std::string key = parseString(jsonStr, pos);
-        skipWhitespace(jsonStr, pos);
+        std::cout << "Debug: Found user field: " << key << "\n";
 
+        skipWhitespace(jsonStr, pos);
         if (pos >= jsonStr.length() || jsonStr[pos] != ':')
         {
             throw std::runtime_error("Expected ':' at position " + std::to_string(pos));
         }
         pos++; // Skip :
+        skipWhitespace(jsonStr, pos);
 
         if (key == "id")
         {
             id = parseString(jsonStr, pos);
+            std::cout << "Debug: Parsed user ID: " << id << "\n";
         }
         else if (key == "name")
         {
             name = parseString(jsonStr, pos);
+            std::cout << "Debug: Parsed user name: " << name << "\n";
         }
         else if (key == "age")
         {
             age = parseNumber(jsonStr, pos);
+            std::cout << "Debug: Parsed user age: " << age << "\n";
         }
         else if (key == "location")
         {
             location = parseString(jsonStr, pos);
+            std::cout << "Debug: Parsed user location: " << location << "\n";
         }
         else if (key == "interests")
         {
+            std::cout << "Debug: Starting to parse interests array\n";
             skipWhitespace(jsonStr, pos);
             if (pos >= jsonStr.length() || jsonStr[pos] != '[')
             {
                 throw std::runtime_error("Expected array at position " + std::to_string(pos));
             }
             pos++; // Skip [
+            skipWhitespace(jsonStr, pos);
 
-            while (pos < jsonStr.length() && jsonStr[pos] != ']')
+            // Handle empty array case
+            if (jsonStr[pos] != ']')
             {
-                interests.push_back(parseString(jsonStr, pos));
-                skipWhitespace(jsonStr, pos);
-                if (jsonStr[pos] == ',')
-                    pos++;
+                while (pos < jsonStr.length() && jsonStr[pos] != ']')
+                {
+                    skipWhitespace(jsonStr, pos);
+                    std::string interest = parseString(jsonStr, pos);
+                    interests.push_back(interest);
+                    std::cout << "Debug: Added interest: " << interest << "\n";
+
+                    skipWhitespace(jsonStr, pos);
+                    if (jsonStr[pos] == ',')
+                        pos++;
+                }
             }
 
             if (pos >= jsonStr.length() || jsonStr[pos] != ']')
@@ -143,6 +202,7 @@ void NetworkParser::parseUserData(const std::string &jsonStr, size_t &pos, User 
                 throw std::runtime_error("Unterminated array");
             }
             pos++; // Skip ]
+            std::cout << "Debug: Finished parsing interests array with " << interests.size() << " interests\n";
         }
 
         skipWhitespace(jsonStr, pos);
@@ -156,11 +216,13 @@ void NetworkParser::parseUserData(const std::string &jsonStr, size_t &pos, User 
     }
     pos++; // Skip }
 
+    std::cout << "Debug: Creating user object\n";
     user = new User(id, name, age, location);
     for (const auto &interest : interests)
     {
         user->addInterest(interest);
     }
+    std::cout << "Debug: Successfully created user object\n";
 }
 
 void NetworkParser::parseConnections(const std::string &jsonStr, size_t &pos, Graph &graph)
@@ -173,6 +235,8 @@ void NetworkParser::parseConnections(const std::string &jsonStr, size_t &pos, Gr
     }
 
     pos++; // Skip [
+
+    std::vector<std::pair<std::string, std::string>> connections;
 
     while (pos < jsonStr.length() && jsonStr[pos] != ']')
     {
@@ -222,7 +286,7 @@ void NetworkParser::parseConnections(const std::string &jsonStr, size_t &pos, Gr
 
         if (!user1.empty() && !user2.empty())
         {
-            graph.addConnection(user1, user2);
+            connections.push_back({user1, user2});
         }
 
         skipWhitespace(jsonStr, pos);
@@ -235,50 +299,66 @@ void NetworkParser::parseConnections(const std::string &jsonStr, size_t &pos, Gr
         throw std::runtime_error("Unterminated array");
     }
     pos++; // Skip ]
+
+    // Add all connections at once
+    for (const auto &[user1, user2] : connections)
+    {
+        graph.addConnection(user1, user2);
+    }
 }
 
 bool NetworkParser::parseJSONFile(const std::string &filename, Graph &graph, std::vector<User *> &users)
 {
     try
     {
+        std::cout << "Debug: Starting JSON parsing...\n";
         std::string jsonStr = readFile(filename);
         size_t pos = 0;
 
         skipWhitespace(jsonStr, pos);
         if (pos >= jsonStr.length() || jsonStr[pos] != '{')
         {
+            std::cerr << "Debug: Expected object at start of file\n";
             throw std::runtime_error("Expected object at start of file");
         }
         pos++; // Skip {
+        std::cout << "Debug: Found opening brace\n";
 
         while (pos < jsonStr.length() && jsonStr[pos] != '}')
         {
             skipWhitespace(jsonStr, pos);
+            std::cout << "Debug: Parsing key at position " << pos << "\n";
 
             std::string key = parseString(jsonStr, pos);
-            skipWhitespace(jsonStr, pos);
+            std::cout << "Debug: Found key: " << key << "\n";
 
+            skipWhitespace(jsonStr, pos);
             if (pos >= jsonStr.length() || jsonStr[pos] != ':')
             {
+                std::cerr << "Debug: Expected ':' after key '" << key << "'\n";
                 throw std::runtime_error("Expected ':' at position " + std::to_string(pos));
             }
             pos++; // Skip :
 
             if (key == "users")
             {
+                std::cout << "Debug: Starting to parse users array\n";
                 skipWhitespace(jsonStr, pos);
                 if (jsonStr[pos] != '[')
                 {
+                    std::cerr << "Debug: Expected '[' for users array\n";
                     throw std::runtime_error("Expected array at position " + std::to_string(pos));
                 }
                 pos++; // Skip [
 
                 while (pos < jsonStr.length() && jsonStr[pos] != ']')
                 {
+                    std::cout << "Debug: Parsing user object\n";
                     User *user = nullptr;
                     parseUserData(jsonStr, pos, user);
                     if (user)
                     {
+                        std::cout << "Debug: Successfully parsed user: " << user->getName() << "\n";
                         users.push_back(user);
                         graph.addUser(user->getUserId());
                     }
@@ -289,13 +369,17 @@ bool NetworkParser::parseJSONFile(const std::string &filename, Graph &graph, std
 
                 if (pos >= jsonStr.length() || jsonStr[pos] != ']')
                 {
+                    std::cerr << "Debug: Users array not properly terminated\n";
                     throw std::runtime_error("Unterminated array");
                 }
                 pos++; // Skip ]
+                std::cout << "Debug: Finished parsing users array\n";
             }
             else if (key == "connections")
             {
+                std::cout << "Debug: Starting to parse connections\n";
                 parseConnections(jsonStr, pos, graph);
+                std::cout << "Debug: Finished parsing connections\n";
             }
 
             skipWhitespace(jsonStr, pos);
@@ -305,13 +389,16 @@ bool NetworkParser::parseJSONFile(const std::string &filename, Graph &graph, std
 
         if (pos >= jsonStr.length() || jsonStr[pos] != '}')
         {
+            std::cerr << "Debug: JSON object not properly terminated\n";
             throw std::runtime_error("Unterminated object");
         }
 
+        std::cout << "Debug: JSON parsing completed successfully\n";
         return true;
     }
     catch (const std::exception &e)
     {
+        std::cerr << "Debug: Exception caught: " << e.what() << "\n";
         // Clean up any allocated users in case of error
         for (User *user : users)
         {

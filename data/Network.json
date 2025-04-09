@@ -1,0 +1,55 @@
+{
+  "users": [
+    {
+      "id": "user1",
+      "name": "John Smith",
+      "age": 25,
+      "location": "New York",
+      "interests": [
+        "programming",
+        "music",
+        "travel"
+      ]
+    },
+    {
+      "id": "user2",
+      "name": "Alice Johnson",
+      "age": 28,
+      "location": "San Francisco",
+      "interests": [
+        "art",
+        "photography",
+        "hiking"
+      ]
+    },
+    {
+      "id": "user3",
+      "name": "David Lee",
+      "age": 30,
+      "location": "Boston",
+      "interests": [
+        "sports",
+        "cooking",
+        "reading"
+      ]
+    },
+    {
+      "id": "user4",
+      "name": "Yug",
+      "age": 19,
+      "location": "delhi",
+      "interests": [
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "user1": "user2",
+      "user2": "user3"
+    },
+    {
+      "user1": "user1",
+      "user2": "user2"
+    }
+  ]
+}

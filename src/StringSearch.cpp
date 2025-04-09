@@ -1,6 +1,14 @@
 #include "../include/StringSearch.hpp"
 #include <algorithm>
 
+// Helper function to convert string to lowercase
+std::string toLowerCase(const std::string &str)
+{
+    std::string result = str;
+    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+    return result;
+}
+
 std::vector<int> StringSearch::computeLPSArray(const std::string &pattern)
 {
     int m = pattern.length();
@@ -37,31 +45,57 @@ std::vector<int> StringSearch::computeLPSArray(const std::string &pattern)
 std::vector<size_t> StringSearch::KMPSearch(const std::string &text, const std::string &pattern)
 {
     std::vector<size_t> positions;
-    int n = text.length();
-    int m = pattern.length();
-
-    if (m == 0 || n == 0)
+    if (pattern.empty() || text.empty())
         return positions;
 
-    std::vector<int> lps = computeLPSArray(pattern);
+    // Convert both strings to lowercase for case-insensitive comparison
+    std::string lowerText = toLowerCase(text);
+    std::string lowerPattern = toLowerCase(pattern);
 
-    int i = 0; // index for text
-    int j = 0; // index for pattern
+    std::vector<int> lps(lowerPattern.length(), 0);
 
-    while (i < n)
+    // Compute LPS array
+    int len = 0;
+    int i = 1;
+    while (i < lowerPattern.length())
     {
-        if (pattern[j] == text[i])
+        if (lowerPattern[i] == lowerPattern[len])
+        {
+            len++;
+            lps[i] = len;
+            i++;
+        }
+        else
+        {
+            if (len != 0)
+            {
+                len = lps[len - 1];
+            }
+            else
+            {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+
+    // Find pattern matches
+    i = 0;
+    int j = 0;
+    while (i < lowerText.length())
+    {
+        if (lowerPattern[j] == lowerText[i])
         {
             j++;
             i++;
         }
 
-        if (j == m)
+        if (j == lowerPattern.length())
         {
             positions.push_back(i - j);
             j = lps[j - 1];
         }
-        else if (i < n && pattern[j] != text[i])
+        else if (i < lowerText.length() && lowerPattern[j] != lowerText[i])
         {
             if (j != 0)
             {
@@ -109,24 +143,38 @@ long long StringSearch::calculatePowerValue(int m)
 std::vector<size_t> StringSearch::RabinKarpSearch(const std::string &text, const std::string &pattern)
 {
     std::vector<size_t> positions;
-    int n = text.length();
-    int m = pattern.length();
-
-    if (m == 0 || n == 0 || m > n)
+    if (pattern.empty() || text.empty())
         return positions;
 
-    long long patternHash = calculateHash(pattern, m - 1);
-    long long textHash = calculateHash(text, m - 1);
-    long long h = calculatePowerValue(m);
+    // Convert both strings to lowercase for case-insensitive comparison
+    std::string lowerText = toLowerCase(text);
+    std::string lowerPattern = toLowerCase(pattern);
 
-    for (int i = 0; i <= n - m; i++)
+    const int prime = 101;
+    const int d = 256;
+    int h = 1;
+    int patternHash = 0;
+    int textHash = 0;
+
+    for (int i = 0; i < lowerPattern.length() - 1; i++)
+    {
+        h = (h * d) % prime;
+    }
+
+    for (int i = 0; i < lowerPattern.length(); i++)
+    {
+        patternHash = (d * patternHash + lowerPattern[i]) % prime;
+        textHash = (d * textHash + lowerText[i]) % prime;
+    }
+
+    for (int i = 0; i <= lowerText.length() - lowerPattern.length(); i++)
     {
         if (patternHash == textHash)
         {
             bool match = true;
-            for (int j = 0; j < m; j++)
+            for (int j = 0; j < lowerPattern.length(); j++)
             {
-                if (text[i + j] != pattern[j])
+                if (lowerText[i + j] != lowerPattern[j])
                 {
                     match = false;
                     break;
@@ -138,9 +186,13 @@ std::vector<size_t> StringSearch::RabinKarpSearch(const std::string &text, const
             }
         }
 
-        if (i < n - m)
+        if (i < lowerText.length() - lowerPattern.length())
         {
-            textHash = recalculateHash(textHash, text[i], text[i + m], h);
+            textHash = (d * (textHash - lowerText[i] * h) + lowerText[i + lowerPattern.length()]) % prime;
+            if (textHash < 0)
+            {
+                textHash += prime;
+            }
         }
     }
 
