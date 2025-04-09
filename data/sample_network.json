@@ -1,0 +1,81 @@
+{
+  "users": [
+    {
+      "id": "user1",
+      "name": "John Smith",
+      "age": 25,
+      "location": "New York",
+      "interests": [
+        "programming",
+        "music",
+        "travel"
+      ]
+    },
+    {
+      "id": "user2",
+      "name": "Alice Johnson",
+      "age": 28,
+      "location": "San Francisco",
+      "interests": [
+        "art",
+        "photography",
+        "travel"
+      ]
+    },
+    {
+      "id": "user3",
+      "name": "Bob Wilson",
+      "age": 30,
+      "location": "Chicago",
+      "interests": [
+        "sports",
+        "music",
+        "cooking"
+      ]
+    },
+    {
+      "id": "user4",
+      "name": "Emma Davis",
+      "age": 27,
+      "location": "Boston",
+      "interests": [
+        "reading",
+        "art",
+        "travel"
+      ]
+    },
+    {
+      "id": "user5",
+      "name": "Michael Brown",
+      "age": 32,
+      "location": "Seattle",
+      "interests": [
+        "technology",
+        "hiking",
+        "photography"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "user1": "user1",
+      "user2": "user2"
+    },
+    {
+      "user1": "user2",
+      "user2": "user3"
+    },
+    {
+      "user1": "user3",
+      "user2": "user4"
+    },
+    {
+      "user1": "user4",
+      "user2": "user5"
+    },
+    {
+      "user1": "user1",
+      "user2": "user5"
+    }
+  ]
+}
