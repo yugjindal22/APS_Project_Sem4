@@ -39,7 +39,7 @@ void Graph::addConnection(const string &user1, const string &user2)
     addUser(user2);
 
     // Update adjacency list
-    if (find(adjacencyList[user1].begin(), adjacencyList[user1].end(), user2) == adjacencyList[user1].end())
+    if (std::find(adjacencyList[user1].begin(), adjacencyList[user1].end(), user2) == adjacencyList[user1].end())
     {
         adjacencyList[user1].push_back(user2);
         adjacencyList[user2].push_back(user1);
@@ -77,7 +77,7 @@ bool Graph::areConnected(const string &user1, const string &user2) const
     {
         return false;
     }
-    return find(adjacencyList.at(user1).begin(), adjacencyList.at(user1).end(), user2) != adjacencyList.at(user1).end();
+    return std::find(adjacencyList.at(user1).begin(), adjacencyList.at(user1).end(), user2) != adjacencyList.at(user1).end();
 }
 
 vector<string> Graph::getFriendRecommendations(const string &userId, int depth) const
@@ -222,7 +222,7 @@ vector<vector<string>> Graph::detectCommunities(int threshold)
 
     vector<int> parent(users.size());
     vector<int> rank(users.size(), 0);
-    for (int i = 0; i < users.size(); i++)
+    for (size_t i = 0; i < users.size(); i++)
     {
         parent[i] = i;
     }
@@ -242,7 +242,7 @@ vector<vector<string>> Graph::detectCommunities(int threshold)
     }
 
     unordered_map<int, vector<string>> communities;
-    for (int i = 0; i < users.size(); i++)
+    for (size_t i = 0; i < users.size(); i++)
     {
         int root = find(parent, i);
         communities[root].push_back(users[i]);
