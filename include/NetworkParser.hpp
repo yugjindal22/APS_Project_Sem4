@@ -6,25 +6,27 @@
 #include "User.hpp"
 #include "Graph.hpp"
 
+using namespace std;
+
 class NetworkParser
 {
 public:
     // JSON parsing
-    static bool parseJSONFile(const std::string &filename, Graph &graph, std::vector<User *> &users);
-    static bool parseCSVFile(const std::string &filename, Graph &graph, std::vector<User *> &users);
+    static bool parseJSONFile(const string &filename, Graph &graph, vector<User *> &users);
+    static bool parseCSVFile(const string &filename, Graph &graph, vector<User *> &users);
 
     // Data export
-    static bool exportToJSON(const std::string &filename, const Graph &graph, const std::vector<User *> &users);
-    static bool exportToCSV(const std::string &filename, const Graph &graph, const std::vector<User *> &users);
+    static bool exportToJSON(const string &filename, const Graph &graph, const vector<User *> &users);
+    static bool exportToCSV(const string &filename, const Graph &graph, const vector<User *> &users);
 
 private:
     // Helper functions for JSON parsing
-    static std::string readFile(const std::string &filename);
-    static void parseUserData(const std::string &jsonStr, size_t &pos, User *&user);
-    static void parseConnections(const std::string &jsonStr, size_t &pos, Graph &graph);
-    static std::string parseString(const std::string &jsonStr, size_t &pos);
-    static int parseNumber(const std::string &jsonStr, size_t &pos);
-    static void skipWhitespace(const std::string &jsonStr, size_t &pos);
+    static string readFile(const string &filename);
+    static void parseUserData(const string &jsonStr, size_t &pos, User *&user);
+    static void parseConnections(const string &jsonStr, size_t &pos, Graph &graph);
+    static string parseString(const string &jsonStr, size_t &pos);
+    static int parseNumber(const string &jsonStr, size_t &pos);
+    static void skipWhitespace(const string &jsonStr, size_t &pos);
 };
 
 #endif // NETWORK_PARSER_HPP

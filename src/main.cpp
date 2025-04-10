@@ -8,63 +8,65 @@
 #include "../include/NetworkParser.hpp"
 #include "../include/StringSearch.hpp"
 
+using namespace std;
+
 void printDivider()
 {
-    std::cout << "\n"
-              << std::string(60, '-') << "\n";
+    cout << "\n"
+         << string(60, '-') << "\n";
 }
 
-void printUserList(const std::vector<User *> &users, const std::string &title)
+void printUserList(const vector<User *> &users, const string &title)
 {
-    std::cout << "\n"
-              << title << ":\n";
+    cout << "\n"
+         << title << ":\n";
     for (const User *user : users)
     {
-        std::cout << user->toString() << "\n";
+        cout << user->toString() << "\n";
     }
 }
 
-void printCommunities(const std::vector<std::vector<std::string>> &communities)
+void printCommunities(const vector<vector<string>> &communities)
 {
-    std::cout << "\nDetected Communities:\n";
+    cout << "\nDetected Communities:\n";
     for (size_t i = 0; i < communities.size(); ++i)
     {
-        std::cout << "Community " << (i + 1) << ": ";
+        cout << "Community " << (i + 1) << ": ";
         for (size_t j = 0; j < communities[i].size(); ++j)
         {
-            std::cout << communities[i][j];
+            cout << communities[i][j];
             if (j < communities[i].size() - 1)
-                std::cout << ", ";
+                cout << ", ";
         }
-        std::cout << "\n";
+        cout << "\n";
     }
 }
 
-void printShortestPaths(const std::vector<std::vector<int>> &distances, const std::vector<std::string> &users)
+void printShortestPaths(const vector<vector<int>> &distances, const vector<string> &users)
 {
-    std::cout << "\nAll-Pairs Shortest Paths (Degrees of Separation):\n";
-    std::cout << std::setw(15) << "To →";
+    cout << "\nAll-Pairs Shortest Paths (Degrees of Separation):\n";
+    cout << setw(15) << "To →";
     for (const auto &user : users)
     {
-        std::cout << std::setw(8) << user;
+        cout << setw(8) << user;
     }
-    std::cout << "\nFrom ↓\n";
+    cout << "\nFrom ↓\n";
 
     for (size_t i = 0; i < users.size(); ++i)
     {
-        std::cout << std::setw(15) << users[i];
+        cout << setw(15) << users[i];
         for (size_t j = 0; j < users.size(); ++j)
         {
-            if (distances[i][j] == std::numeric_limits<int>::max())
+            if (distances[i][j] == numeric_limits<int>::max())
             {
-                std::cout << std::setw(8) << "∞";
+                cout << setw(8) << "∞";
             }
             else
             {
-                std::cout << std::setw(8) << distances[i][j];
+                cout << setw(8) << distances[i][j];
             }
         }
-        std::cout << "\n";
+        cout << "\n";
     }
 }
 
@@ -79,29 +81,29 @@ void clearScreen()
 
 void waitForEnter()
 {
-    std::cout << "\nPress Enter to continue...";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    cout << "\nPress Enter to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-std::string getInput(const std::string &prompt)
+string getInput(const string &prompt)
 {
-    std::string input;
-    std::cout << prompt;
-    std::getline(std::cin, input);
+    string input;
+    cout << prompt;
+    getline(cin, input);
     return input;
 }
 
-int getIntInput(const std::string &prompt, int min = std::numeric_limits<int>::min(), int max = std::numeric_limits<int>::max())
+int getIntInput(const string &prompt, int min = numeric_limits<int>::min(), int max = numeric_limits<int>::max())
 {
     while (true)
     {
-        std::cout << prompt;
-        std::string input;
-        std::getline(std::cin, input);
+        cout << prompt;
+        string input;
+        getline(cin, input);
 
         try
         {
-            int value = std::stoi(input);
+            int value = stoi(input);
             if (value >= min && value <= max)
             {
                 return value;
@@ -111,56 +113,56 @@ int getIntInput(const std::string &prompt, int min = std::numeric_limits<int>::m
         {
         }
 
-        std::cout << "Invalid input. Please try again.\n";
+        cout << "Invalid input. Please try again.\n";
     }
 }
 
-void addNewUser(Graph &socialNetwork, std::vector<User *> &users)
+void addNewUser(Graph &socialNetwork, vector<User *> &users)
 {
-    std::cout << "\n=== Add New User ===\n";
-    std::string id = getInput("Enter user ID: ");
-    std::string name = getInput("Enter name: ");
+    cout << "\n=== Add New User ===\n";
+    string id = getInput("Enter user ID: ");
+    string name = getInput("Enter name: ");
     int age = getIntInput("Enter age (1-120): ", 1, 120);
-    std::string location = getInput("Enter location: ");
+    string location = getInput("Enter location: ");
 
     User *user = new User(id, name, age, location);
 
-    std::cout << "Add interests? (y/n): ";
-    std::string answer;
-    std::getline(std::cin, answer);
+    cout << "Add interests? (y/n): ";
+    string answer;
+    getline(cin, answer);
 
     while (answer == "y" || answer == "Y")
     {
-        std::string interest = getInput("Enter an interest (or press Enter to finish): ");
+        string interest = getInput("Enter an interest (or press Enter to finish): ");
         if (interest.empty())
             break;
         user->addInterest(interest);
 
-        std::cout << "Add another interest? (y/n): ";
-        std::getline(std::cin, answer);
+        cout << "Add another interest? (y/n): ";
+        getline(cin, answer);
     }
 
     users.push_back(user);
     socialNetwork.addUser(id);
-    std::cout << "\nUser added successfully!\n";
+    cout << "\nUser added successfully!\n";
 }
 
-void addConnection(Graph &socialNetwork, const std::vector<User *> &users)
+void addConnection(Graph &socialNetwork, const vector<User *> &users)
 {
-    std::cout << "\n=== Add Connections ===\n";
-    std::cout << "\nAvailable users:\n";
+    cout << "\n=== Add Connections ===\n";
+    cout << "\nAvailable users:\n";
     for (const User *user : users)
     {
-        std::cout << user->getUserId() << " - " << user->getName() << "\n";
+        cout << user->getUserId() << " - " << user->getName() << "\n";
     }
 
-    std::vector<std::pair<std::string, std::string>> connections;
-    std::string answer;
+    vector<pair<string, string>> connections;
+    string answer;
 
     do
     {
-        std::string user1 = getInput("\nEnter first user ID: ");
-        std::string user2 = getInput("Enter second user ID: ");
+        string user1 = getInput("\nEnter first user ID: ");
+        string user2 = getInput("Enter second user ID: ");
 
         bool user1Found = false, user2Found = false;
         for (const User *user : users)
@@ -173,15 +175,15 @@ void addConnection(Graph &socialNetwork, const std::vector<User *> &users)
 
         if (!user1Found || !user2Found)
         {
-            std::cout << "One or both users not found!\n";
+            cout << "One or both users not found!\n";
         }
         else
         {
             connections.push_back({user1, user2});
         }
 
-        std::cout << "Add another connection? (y/n): ";
-        std::getline(std::cin, answer);
+        cout << "Add another connection? (y/n): ";
+        getline(cin, answer);
 
     } while (answer == "y" || answer == "Y");
 
@@ -191,22 +193,22 @@ void addConnection(Graph &socialNetwork, const std::vector<User *> &users)
         socialNetwork.addConnection(user1, user2);
     }
 
-    std::cout << "\n"
-              << connections.size() << " connection(s) added successfully!\n";
+    cout << "\n"
+         << connections.size() << " connection(s) added successfully!\n";
 }
 
-void searchUsers(const std::vector<User *> &users)
+void searchUsers(const vector<User *> &users)
 {
-    std::cout << "\n=== Search Users ===\n";
-    std::cout << "1. Search by name\n";
-    std::cout << "2. Search by location\n";
-    std::cout << "3. Search by interest\n";
+    cout << "\n=== Search Users ===\n";
+    cout << "1. Search by name\n";
+    cout << "2. Search by location\n";
+    cout << "3. Search by interest\n";
 
     int choice = getIntInput("Enter your choice (1-3): ", 1, 3);
-    std::string searchTerm = getInput("Enter search term: ");
+    string searchTerm = getInput("Enter search term: ");
 
-    std::cout << "\nSearch Results:\n";
-    std::vector<User *> results;
+    cout << "\nSearch Results:\n";
+    vector<User *> results;
 
     switch (choice)
     {
@@ -223,79 +225,79 @@ void searchUsers(const std::vector<User *> &users)
 
     if (results.empty())
     {
-        std::cout << "No matching users found.\n";
+        cout << "No matching users found.\n";
     }
     else
     {
         for (const User *user : results)
         {
-            std::cout << "\n"
-                      << user->toString();
+            cout << "\n"
+                 << user->toString();
         }
     }
 }
 
 void showMainMenu()
 {
-    std::cout << "\n=== Social Network Analyzer ===\n";
-    std::cout << "1. Add new user\n";
-    std::cout << "2. Add connection between users\n";
-    std::cout << "3. Show all users\n";
-    std::cout << "4. Show friend recommendations\n";
-    std::cout << "5. Show communities\n";
-    std::cout << "6. Show shortest paths\n";
-    std::cout << "7. Search users\n";
-    std::cout << "0. Exit\n";
+    cout << "\n=== Social Network Analyzer ===\n";
+    cout << "1. Add new user\n";
+    cout << "2. Add connection between users\n";
+    cout << "3. Show all users\n";
+    cout << "4. Show friend recommendations\n";
+    cout << "5. Show communities\n";
+    cout << "6. Show shortest paths\n";
+    cout << "7. Search users\n";
+    cout << "0. Exit\n";
 }
 
-void loadNetworkData(Graph &socialNetwork, std::vector<User *> &users)
+void loadNetworkData(Graph &socialNetwork, vector<User *> &users)
 {
     try
     {
-        std::filesystem::path dataPath = std::filesystem::current_path() / "data" / "Network.json";
-        std::cout << "\nLoading network data from: " << dataPath << std::endl;
+        filesystem::path dataPath = filesystem::current_path() / "data" / "Network.json";
+        cout << "\nLoading network data from: " << dataPath << endl;
 
-        if (!std::filesystem::exists(dataPath))
+        if (!filesystem::exists(dataPath))
         {
-            std::cerr << "Error: Network.json file not found!\n";
+            cerr << "Error: Network.json file not found!\n";
             return;
         }
 
         if (!NetworkParser::parseJSONFile(dataPath.string(), socialNetwork, users))
         {
-            std::cerr << "Error: Could not load network data!\n";
+            cerr << "Error: Could not load network data!\n";
         }
         else
         {
-            std::cout << "Network data fetched successfully!\n";
-            std::cout << "Successfully loaded " << users.size() << " users\n";
+            cout << "Network data fetched successfully!\n";
+            cout << "Successfully loaded " << users.size() << " users\n";
         }
     }
-    catch (const std::exception &e)
+    catch (const exception &e)
     {
-        std::cerr << "Error loading network data: " << e.what() << std::endl;
+        cerr << "Error loading network data: " << e.what() << endl;
     }
 }
 
-void saveNetworkData(const Graph &socialNetwork, const std::vector<User *> &users)
+void saveNetworkData(const Graph &socialNetwork, const vector<User *> &users)
 {
-    std::filesystem::path dataPath = std::filesystem::current_path() / "data" / "Network.json";
-    std::cout << "\nSaving network data to: " << dataPath << std::endl;
+    filesystem::path dataPath = filesystem::current_path() / "data" / "Network.json";
+    cout << "\nSaving network data to: " << dataPath << endl;
 
     if (!NetworkParser::exportToJSON(dataPath.string(), socialNetwork, users))
     {
-        std::cerr << "Error: Failed to save network data!\n";
+        cerr << "Error: Failed to save network data!\n";
     }
     else
     {
-        std::cout << "Network data saved successfully!\n";
+        cout << "Network data saved successfully!\n";
     }
 }
 
 int main()
 {
     Graph socialNetwork;
-    std::vector<User *> users;
+    vector<User *> users;
 
     // Automatically load data at startup
     loadNetworkData(socialNetwork, users);
@@ -331,10 +333,10 @@ int main()
 
         case 4:
             printDivider();
-            std::cout << "\nFriend Recommendations:\n";
+            cout << "\nFriend Recommendations:\n";
             for (const User *user : users)
             {
-                std::cout << "\nRecommendations for " << user->getName() << ":\n";
+                cout << "\nRecommendations for " << user->getName() << ":\n";
                 auto recommendations = socialNetwork.getFriendRecommendations(user->getUserId());
                 for (const auto &recommendedId : recommendations)
                 {
@@ -342,7 +344,7 @@ int main()
                     {
                         if (u->getUserId() == recommendedId)
                         {
-                            std::cout << "- " << u->getName() << "\n";
+                            cout << "- " << u->getName() << "\n";
                             break;
                         }
                     }

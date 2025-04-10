@@ -5,41 +5,43 @@
 #include <vector>
 #include <unordered_map>
 
+using namespace std;
+
 class User
 {
 private:
-    std::string userId;
-    std::string name;
+    string userId;
+    string name;
     int age;
-    std::string location;
-    std::vector<std::string> interests;
-    std::unordered_map<std::string, std::string> profileData;
+    string location;
+    vector<string> interests;
+    unordered_map<string, string> profileData;
 
 public:
-    User(const std::string &id, const std::string &userName, int userAge = 0,
-         const std::string &userLocation = "");
+    User(const string &id, const string &userName, int userAge = 0,
+         const string &userLocation = "");
 
     // Getters
-    std::string getUserId() const;
-    std::string getName() const;
+    string getUserId() const;
+    string getName() const;
     int getAge() const;
-    std::string getLocation() const;
-    std::vector<std::string> getInterests() const;
+    string getLocation() const;
+    vector<string> getInterests() const;
 
     // Setters
-    void setName(const std::string &newName);
+    void setName(const string &newName);
     void setAge(int newAge);
-    void setLocation(const std::string &newLocation);
-    void addInterest(const std::string &interest);
-    void removeInterest(const std::string &interest);
+    void setLocation(const string &newLocation);
+    void addInterest(const string &interest);
+    void removeInterest(const string &interest);
 
     // Profile data management
-    void addProfileData(const std::string &key, const std::string &value);
-    std::string getProfileData(const std::string &key) const;
-    bool hasProfileData(const std::string &key) const;
+    void addProfileData(const string &key, const string &value);
+    string getProfileData(const string &key) const;
+    bool hasProfileData(const string &key) const;
 
     // String representation
-    std::string toString() const;
+    string toString() const;
 };
 
 #endif // USER_HPP

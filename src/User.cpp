@@ -2,15 +2,15 @@
 #include <sstream>
 #include <algorithm>
 
-User::User(const std::string &id, const std::string &userName, int userAge, const std::string &userLocation)
+User::User(const string &id, const string &userName, int userAge, const string &userLocation)
     : userId(id), name(userName), age(userAge), location(userLocation) {}
 
-std::string User::getUserId() const
+string User::getUserId() const
 {
     return userId;
 }
 
-std::string User::getName() const
+string User::getName() const
 {
     return name;
 }
@@ -20,17 +20,17 @@ int User::getAge() const
     return age;
 }
 
-std::string User::getLocation() const
+string User::getLocation() const
 {
     return location;
 }
 
-std::vector<std::string> User::getInterests() const
+vector<string> User::getInterests() const
 {
     return interests;
 }
 
-void User::setName(const std::string &newName)
+void User::setName(const string &newName)
 {
     name = newName;
 }
@@ -40,12 +40,12 @@ void User::setAge(int newAge)
     age = newAge;
 }
 
-void User::setLocation(const std::string &newLocation)
+void User::setLocation(const string &newLocation)
 {
     location = newLocation;
 }
 
-void User::addInterest(const std::string &interest)
+void User::addInterest(const string &interest)
 {
     for (const auto &existingInterest : interests)
     {
@@ -55,36 +55,36 @@ void User::addInterest(const std::string &interest)
     interests.push_back(interest);
 }
 
-void User::removeInterest(const std::string &interest)
+void User::removeInterest(const string &interest)
 {
-    auto it = std::find(interests.begin(), interests.end(), interest);
+    auto it = find(interests.begin(), interests.end(), interest);
     if (it != interests.end())
     {
         interests.erase(it);
     }
 }
 
-void User::addProfileData(const std::string &key, const std::string &value)
+void User::addProfileData(const string &key, const string &value)
 {
     profileData[key] = value;
 }
 
-std::string User::getProfileData(const std::string &key) const
+string User::getProfileData(const string &key) const
 {
     auto it = profileData.find(key);
     return (it != profileData.end()) ? it->second : "";
 }
 
-bool User::hasProfileData(const std::string &key) const
+bool User::hasProfileData(const string &key) const
 {
     return profileData.find(key) != profileData.end();
 }
 
-std::string User::toString() const
+string User::toString() const
 {
     try
     {
-        std::stringstream ss;
+        stringstream ss;
         ss << "User ID: " << (userId.empty() ? "N/A" : userId) << "\n"
            << "Name: " << (name.empty() ? "N/A" : name) << "\n"
            << "Age: " << age << "\n"
@@ -123,8 +123,8 @@ std::string User::toString() const
 
         return ss.str();
     }
-    catch (const std::exception &e)
+    catch (const exception &e)
     {
-        return "Error formatting user data: " + std::string(e.what());
+        return "Error formatting user data: " + string(e.what());
     }
 }

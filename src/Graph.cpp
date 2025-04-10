@@ -3,13 +3,15 @@
 #include <limits>
 #include <stack>
 
+using namespace std;
+
 Graph::Graph() {}
 
-void Graph::addUser(const std::string &userId)
+void Graph::addUser(const string &userId)
 {
     if (adjacencyList.find(userId) == adjacencyList.end())
     {
-        adjacencyList[userId] = std::vector<std::string>();
+        adjacencyList[userId] = vector<string>();
 
         // Update users and indices
         userIndices[userId] = users.size();
@@ -20,14 +22,14 @@ void Graph::addUser(const std::string &userId)
         adjacencyMatrix.resize(newSize);
         for (auto &row : adjacencyMatrix)
         {
-            row.resize(newSize, std::numeric_limits<int>::max());
+            row.resize(newSize, numeric_limits<int>::max());
         }
         // Set diagonal to 0
         adjacencyMatrix[newSize - 1][newSize - 1] = 0;
     }
 }
 
-void Graph::addConnection(const std::string &user1, const std::string &user2)
+void Graph::addConnection(const string &user1, const string &user2)
 {
     if (user1 == user2)
         return;
@@ -37,7 +39,7 @@ void Graph::addConnection(const std::string &user1, const std::string &user2)
     addUser(user2);
 
     // Update adjacency list
-    if (std::find(adjacencyList[user1].begin(), adjacencyList[user1].end(), user2) == adjacencyList[user1].end())
+    if (find(adjacencyList[user1].begin(), adjacencyList[user1].end(), user2) == adjacencyList[user1].end())
     {
         adjacencyList[user1].push_back(user2);
         adjacencyList[user2].push_back(user1);
@@ -50,39 +52,39 @@ void Graph::addConnection(const std::string &user1, const std::string &user2)
     }
 }
 
-void Graph::removeConnection(const std::string &user1, const std::string &user2)
+void Graph::removeConnection(const string &user1, const string &user2)
 {
     if (adjacencyList.find(user1) != adjacencyList.end() && adjacencyList.find(user2) != adjacencyList.end())
     {
         adjacencyList[user1].erase(
-            std::remove(adjacencyList[user1].begin(), adjacencyList[user1].end(), user2),
+            remove(adjacencyList[user1].begin(), adjacencyList[user1].end(), user2),
             adjacencyList[user1].end());
         adjacencyList[user2].erase(
-            std::remove(adjacencyList[user2].begin(), adjacencyList[user2].end(), user1),
+            remove(adjacencyList[user2].begin(), adjacencyList[user2].end(), user1),
             adjacencyList[user2].end());
 
         // Update adjacency matrix
         int idx1 = userIndices[user1];
         int idx2 = userIndices[user2];
-        adjacencyMatrix[idx1][idx2] = std::numeric_limits<int>::max();
-        adjacencyMatrix[idx2][idx1] = std::numeric_limits<int>::max();
+        adjacencyMatrix[idx1][idx2] = numeric_limits<int>::max();
+        adjacencyMatrix[idx2][idx1] = numeric_limits<int>::max();
     }
 }
 
-bool Graph::areConnected(const std::string &user1, const std::string &user2) const
+bool Graph::areConnected(const string &user1, const string &user2) const
 {
     if (adjacencyList.find(user1) == adjacencyList.end() || adjacencyList.find(user2) == adjacencyList.end())
     {
         return false;
     }
-    return std::find(adjacencyList.at(user1).begin(), adjacencyList.at(user1).end(), user2) != adjacencyList.at(user1).end();
+    return find(adjacencyList.at(user1).begin(), adjacencyList.at(user1).end(), user2) != adjacencyList.at(user1).end();
 }
 
-std::vector<std::string> Graph::getFriendRecommendations(const std::string &userId, int depth) const
+vector<string> Graph::getFriendRecommendations(const string &userId, int depth) const
 {
-    std::vector<std::string> recommendations;
-    std::set<std::string> visited;
-    std::queue<std::pair<std::string, int>> queue;
+    vector<string> recommendations;
+    set<string> visited;
+    queue<pair<string, int>> queue;
 
     visited.insert(userId);
     queue.push({userId, 0});
@@ -112,18 +114,18 @@ std::vector<std::string> Graph::getFriendRecommendations(const std::string &user
     return recommendations;
 }
 
-std::vector<std::string> Graph::BFS(const std::string &startUser) const
+vector<string> Graph::BFS(const string &startUser) const
 {
-    std::vector<std::string> result;
-    std::set<std::string> visited;
-    std::queue<std::string> queue;
+    vector<string> result;
+    set<string> visited;
+    queue<string> queue;
 
     visited.insert(startUser);
     queue.push(startUser);
 
     while (!queue.empty())
     {
-        std::string current = queue.front();
+        string current = queue.front();
         queue.pop();
         result.push_back(current);
 
@@ -140,15 +142,15 @@ std::vector<std::string> Graph::BFS(const std::string &startUser) const
     return result;
 }
 
-std::vector<std::string> Graph::DFS(const std::string &startUser) const
+vector<string> Graph::DFS(const string &startUser) const
 {
-    std::vector<std::string> result;
-    std::set<std::string> visited;
+    vector<string> result;
+    set<string> visited;
     DFSUtil(startUser, visited, result);
     return result;
 }
 
-void Graph::DFSUtil(const std::string &user, std::set<std::string> &visited, std::vector<std::string> &result) const
+void Graph::DFSUtil(const string &user, set<string> &visited, vector<string> &result) const
 {
     visited.insert(user);
     result.push_back(user);
@@ -162,10 +164,10 @@ void Graph::DFSUtil(const std::string &user, std::set<std::string> &visited, std
     }
 }
 
-std::vector<Graph::Edge> Graph::getAllEdges() const
+vector<Graph::Edge> Graph::getAllEdges() const
 {
-    std::vector<Edge> edges;
-    std::set<std::pair<std::string, std::string>> added;
+    vector<Edge> edges;
+    set<pair<string, string>> added;
 
     for (const auto &[user, friends] : adjacencyList)
     {
@@ -182,7 +184,7 @@ std::vector<Graph::Edge> Graph::getAllEdges() const
     return edges;
 }
 
-int Graph::find(std::vector<int> &parent, int i)
+int Graph::find(vector<int> &parent, int i)
 {
     if (parent[i] != i)
     {
@@ -191,7 +193,7 @@ int Graph::find(std::vector<int> &parent, int i)
     return parent[i];
 }
 
-void Graph::unionSets(std::vector<int> &parent, std::vector<int> &rank, int x, int y)
+void Graph::unionSets(vector<int> &parent, vector<int> &rank, int x, int y)
 {
     int rootX = find(parent, x);
     int rootY = find(parent, y);
@@ -211,15 +213,15 @@ void Graph::unionSets(std::vector<int> &parent, std::vector<int> &rank, int x, i
     }
 }
 
-std::vector<std::vector<std::string>> Graph::detectCommunities(int threshold)
+vector<vector<string>> Graph::detectCommunities(int threshold)
 {
-    std::vector<Edge> edges = getAllEdges();
-    std::sort(edges.begin(), edges.end(),
-              [](const Edge &a, const Edge &b)
-              { return a.weight < b.weight; });
+    vector<Edge> edges = getAllEdges();
+    sort(edges.begin(), edges.end(),
+         [](const Edge &a, const Edge &b)
+         { return a.weight < b.weight; });
 
-    std::vector<int> parent(users.size());
-    std::vector<int> rank(users.size(), 0);
+    vector<int> parent(users.size());
+    vector<int> rank(users.size(), 0);
     for (int i = 0; i < users.size(); i++)
     {
         parent[i] = i;
@@ -239,14 +241,14 @@ std::vector<std::vector<std::string>> Graph::detectCommunities(int threshold)
         }
     }
 
-    std::unordered_map<int, std::vector<std::string>> communities;
+    unordered_map<int, vector<string>> communities;
     for (int i = 0; i < users.size(); i++)
     {
         int root = find(parent, i);
         communities[root].push_back(users[i]);
     }
 
-    std::vector<std::vector<std::string>> result;
+    vector<vector<string>> result;
     for (const auto &community : communities)
     {
         result.push_back(community.second);
@@ -255,7 +257,7 @@ std::vector<std::vector<std::string>> Graph::detectCommunities(int threshold)
     return result;
 }
 
-std::vector<std::vector<int>> Graph::floydWarshall() const
+vector<vector<int>> Graph::floydWarshall() const
 {
     int V = users.size();
     auto dist = adjacencyMatrix;
@@ -266,8 +268,8 @@ std::vector<std::vector<int>> Graph::floydWarshall() const
         {
             for (int j = 0; j < V; j++)
             {
-                if (dist[i][k] != std::numeric_limits<int>::max() &&
-                    dist[k][j] != std::numeric_limits<int>::max() &&
+                if (dist[i][k] != numeric_limits<int>::max() &&
+                    dist[k][j] != numeric_limits<int>::max() &&
                     dist[i][k] + dist[k][j] < dist[i][j])
                 {
                     dist[i][j] = dist[i][k] + dist[k][j];
@@ -279,12 +281,12 @@ std::vector<std::vector<int>> Graph::floydWarshall() const
     return dist;
 }
 
-const std::unordered_map<std::string, std::vector<std::string>> &Graph::getAdjacencyList() const
+const unordered_map<string, vector<string>> &Graph::getAdjacencyList() const
 {
     return adjacencyList;
 }
 
-const std::vector<std::string> &Graph::getUsers() const
+const vector<string> &Graph::getUsers() const
 {
     return users;
 }

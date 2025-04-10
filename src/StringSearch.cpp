@@ -1,18 +1,20 @@
 #include "../include/StringSearch.hpp"
 #include <algorithm>
 
+using namespace std;
+
 // Helper function to convert string to lowercase
-std::string toLowerCase(const std::string &str)
+string toLowerCase(const string &str)
 {
-    std::string result = str;
-    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+    string result = str;
+    transform(result.begin(), result.end(), result.begin(), ::tolower);
     return result;
 }
 
-std::vector<int> StringSearch::computeLPSArray(const std::string &pattern)
+vector<int> StringSearch::computeLPSArray(const string &pattern)
 {
     int m = pattern.length();
-    std::vector<int> lps(m, 0);
+    vector<int> lps(m, 0);
 
     int len = 0;
     int i = 1;
@@ -42,17 +44,17 @@ std::vector<int> StringSearch::computeLPSArray(const std::string &pattern)
     return lps;
 }
 
-std::vector<size_t> StringSearch::KMPSearch(const std::string &text, const std::string &pattern)
+vector<size_t> StringSearch::KMPSearch(const string &text, const string &pattern)
 {
-    std::vector<size_t> positions;
+    vector<size_t> positions;
     if (pattern.empty() || text.empty())
         return positions;
 
     // Convert both strings to lowercase for case-insensitive comparison
-    std::string lowerText = toLowerCase(text);
-    std::string lowerPattern = toLowerCase(pattern);
+    string lowerText = toLowerCase(text);
+    string lowerPattern = toLowerCase(pattern);
 
-    std::vector<int> lps(lowerPattern.length(), 0);
+    vector<int> lps(lowerPattern.length(), 0);
 
     // Compute LPS array
     int len = 0;
@@ -111,7 +113,7 @@ std::vector<size_t> StringSearch::KMPSearch(const std::string &text, const std::
     return positions;
 }
 
-long long StringSearch::calculateHash(const std::string &str, int end)
+long long StringSearch::calculateHash(const string &str, int end)
 {
     long long hash = 0;
     for (int i = 0; i <= end; i++)
@@ -140,15 +142,15 @@ long long StringSearch::calculatePowerValue(int m)
     return h;
 }
 
-std::vector<size_t> StringSearch::RabinKarpSearch(const std::string &text, const std::string &pattern)
+vector<size_t> StringSearch::RabinKarpSearch(const string &text, const string &pattern)
 {
-    std::vector<size_t> positions;
+    vector<size_t> positions;
     if (pattern.empty() || text.empty())
         return positions;
 
     // Convert both strings to lowercase for case-insensitive comparison
-    std::string lowerText = toLowerCase(text);
-    std::string lowerPattern = toLowerCase(pattern);
+    string lowerText = toLowerCase(text);
+    string lowerPattern = toLowerCase(pattern);
 
     const int prime = 101;
     const int d = 256;
@@ -199,13 +201,13 @@ std::vector<size_t> StringSearch::RabinKarpSearch(const std::string &text, const
     return positions;
 }
 
-std::vector<User *> StringSearch::searchUsersByName(const std::vector<User *> &users, const std::string &searchPattern, bool useKMP)
+vector<User *> StringSearch::searchUsersByName(const vector<User *> &users, const string &searchPattern, bool useKMP)
 {
-    std::vector<User *> results;
+    vector<User *> results;
     for (User *user : users)
     {
-        std::string name = user->getName();
-        std::vector<size_t> matches = useKMP ? KMPSearch(name, searchPattern) : RabinKarpSearch(name, searchPattern);
+        string name = user->getName();
+        vector<size_t> matches = useKMP ? KMPSearch(name, searchPattern) : RabinKarpSearch(name, searchPattern);
 
         if (!matches.empty())
         {
@@ -215,13 +217,13 @@ std::vector<User *> StringSearch::searchUsersByName(const std::vector<User *> &u
     return results;
 }
 
-std::vector<User *> StringSearch::searchUsersByLocation(const std::vector<User *> &users, const std::string &searchPattern, bool useKMP)
+vector<User *> StringSearch::searchUsersByLocation(const vector<User *> &users, const string &searchPattern, bool useKMP)
 {
-    std::vector<User *> results;
+    vector<User *> results;
     for (User *user : users)
     {
-        std::string location = user->getLocation();
-        std::vector<size_t> matches = useKMP ? KMPSearch(location, searchPattern) : RabinKarpSearch(location, searchPattern);
+        string location = user->getLocation();
+        vector<size_t> matches = useKMP ? KMPSearch(location, searchPattern) : RabinKarpSearch(location, searchPattern);
 
         if (!matches.empty())
         {
@@ -231,15 +233,15 @@ std::vector<User *> StringSearch::searchUsersByLocation(const std::vector<User *
     return results;
 }
 
-std::vector<User *> StringSearch::searchUsersByInterest(const std::vector<User *> &users, const std::string &searchPattern, bool useKMP)
+vector<User *> StringSearch::searchUsersByInterest(const vector<User *> &users, const string &searchPattern, bool useKMP)
 {
-    std::vector<User *> results;
+    vector<User *> results;
     for (User *user : users)
     {
         bool found = false;
-        for (const std::string &interest : user->getInterests())
+        for (const string &interest : user->getInterests())
         {
-            std::vector<size_t> matches = useKMP ? KMPSearch(interest, searchPattern) : RabinKarpSearch(interest, searchPattern);
+            vector<size_t> matches = useKMP ? KMPSearch(interest, searchPattern) : RabinKarpSearch(interest, searchPattern);
 
             if (!matches.empty())
             {
@@ -252,15 +254,15 @@ std::vector<User *> StringSearch::searchUsersByInterest(const std::vector<User *
     return results;
 }
 
-std::vector<User *> StringSearch::searchUsersByProfileData(const std::vector<User *> &users, const std::string &key, const std::string &searchPattern, bool useKMP)
+vector<User *> StringSearch::searchUsersByProfileData(const vector<User *> &users, const string &key, const string &searchPattern, bool useKMP)
 {
-    std::vector<User *> results;
+    vector<User *> results;
     for (User *user : users)
     {
         if (user->hasProfileData(key))
         {
-            std::string value = user->getProfileData(key);
-            std::vector<size_t> matches = useKMP ? KMPSearch(value, searchPattern) : RabinKarpSearch(value, searchPattern);
+            string value = user->getProfileData(key);
+            vector<size_t> matches = useKMP ? KMPSearch(value, searchPattern) : RabinKarpSearch(value, searchPattern);
 
             if (!matches.empty())
             {
