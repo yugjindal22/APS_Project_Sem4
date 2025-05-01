@@ -17,6 +17,14 @@ private:
     unordered_map<string, int> userIndices;
     vector<string> users;
 
+    // Network flow related data structures
+    vector<vector<int>> capacityMatrix; // For Ford-Fulkerson
+    vector<vector<int>> flowMatrix;     // For tracking message flow
+
+    // Helper function for network flow visualization
+    string getFlowVisualization(int source, int sink, const vector<vector<int>> &flow) const;
+    void printAugmentingPath(const vector<int> &parent, int source, int sink) const;
+
 public:
     Graph();
 
@@ -51,16 +59,30 @@ public:
     // Floyd-Warshall algorithm implementation
     vector<vector<int>> floydWarshall() const;
 
+    // Network Flow (Ford-Fulkerson) for message routing
+    bool sendMessage(const string &fromUser, const string &toUser, const string &message);
+    int maxFlow(int source, int sink);                   // Ford-Fulkerson implementation
+    bool bfs(int source, int sink, vector<int> &parent); // For Ford-Fulkerson
+
+    // Dynamic Programming for message path optimization
+    vector<string> findOptimalMessagePath(const string &fromUser, const string &toUser);
+
     // Utility functions
     const unordered_map<string, vector<string>> &getAdjacencyList() const;
     const vector<string> &getUsers() const;
     int getUserCount() const;
+
+    // Network flow visualization accessors
+    const vector<vector<int>> &getCapacityMatrix() const { return capacityMatrix; }
+    const vector<vector<int>> &getFlowMatrix() const { return flowMatrix; }
 
 private:
     // Helper functions for community detection
     vector<Edge> getAllEdges() const;
     int find(vector<int> &parent, int i);
     void unionSets(vector<int> &parent, vector<int> &rank, int x, int y);
+
+    void initializeFlowNetworks(); // Initialize flow networks
 };
 
 #endif // GRAPH_HPP

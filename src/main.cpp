@@ -44,30 +44,49 @@ void printCommunities(const vector<vector<string>> &communities)
 
 void printShortestPaths(const vector<vector<int>> &distances, const vector<string> &users)
 {
-    cout << "\nAll-Pairs Shortest Paths (Degrees of Separation):\n";
-    cout << setw(15) << "To →";
+    if (users.empty())
+    {
+        cout << "\nNo users in the network.\n";
+        return;
+    }
+
+    const int columnWidth = 8; // Fixed width columns
+    const int leftPadding = 4; // Fixed left padding
+    const string infinity = "∞";
+
+    // Print header
+    cout << "\nAll-Pairs Shortest Paths (Degrees of Separation):\n\n";
+
+    // Print top row with user IDs
+    cout << string(leftPadding, ' '); // Initial padding
     for (const auto &user : users)
     {
-        cout << setw(8) << user;
+        cout << setw(columnWidth) << right << user;
     }
-    cout << "\nFrom ↓\n";
+    cout << "\n";
 
+    // Print horizontal line
+    cout << string(leftPadding, ' ');
+    cout << string(users.size() * columnWidth, '-') << "\n";
+
+    // Print each row
     for (size_t i = 0; i < users.size(); ++i)
     {
-        cout << setw(15) << users[i];
+        cout << string(leftPadding, ' ') << left << setw(columnWidth) << users[i];
         for (size_t j = 0; j < users.size(); ++j)
         {
             if (distances[i][j] == numeric_limits<int>::max())
             {
-                cout << setw(8) << "∞";
+                cout << setw(columnWidth) << right << infinity;
             }
             else
             {
-                cout << setw(8) << distances[i][j];
+                cout << setw(columnWidth) << right << distances[i][j];
             }
         }
         cout << "\n";
     }
+    cout << "\n";
 }
 
 void clearScreen()
@@ -247,7 +266,43 @@ void showMainMenu()
     cout << "5. Show communities\n";
     cout << "6. Show shortest paths\n";
     cout << "7. Search users\n";
+    cout << "8. Send message\n"; // New option
     cout << "0. Exit\n";
+}
+
+void sendMessageMenu(Graph &socialNetwork, const vector<User *> &users)
+{
+    cout << "\n=== Send Message ===\n";
+    cout << "\nAvailable users:\n";
+    for (const User *user : users)
+    {
+        cout << user->getUserId() << " - " << user->getName() << "\n";
+    }
+
+    string fromUser = getInput("\nEnter sender's user ID: ");
+    string toUser = getInput("Enter recipient's user ID: ");
+    string message = getInput("Enter message to send: ");
+
+    // First check if message can be routed using network flow
+    if (socialNetwork.sendMessage(fromUser, toUser, message))
+    {
+        // If possible, find the optimal path using dynamic programming
+        vector<string> path = socialNetwork.findOptimalMessagePath(fromUser, toUser);
+
+        cout << "\nMessage sent successfully!\n";
+        cout << "Message route: ";
+        for (size_t i = 0; i < path.size(); ++i)
+        {
+            cout << path[i];
+            if (i < path.size() - 1)
+                cout << " -> ";
+        }
+        cout << "\n";
+    }
+    else
+    {
+        cout << "\nError: Cannot route message to recipient. No valid path exists.\n";
+    }
 }
 
 void loadNetworkData(Graph &socialNetwork, vector<User *> &users)
@@ -307,7 +362,7 @@ int main()
         clearScreen();
         showMainMenu();
 
-        int choice = getIntInput("\nEnter your choice (0-7): ", 0, 7);
+        int choice = getIntInput("\nEnter your choice (0-8): ", 0, 8); // Updated range
 
         if (choice == 0)
         {
@@ -364,6 +419,10 @@ int main()
 
         case 7:
             searchUsers(users);
+            break;
+
+        case 8:
+            sendMessageMenu(socialNetwork, users);
             break;
         }
 

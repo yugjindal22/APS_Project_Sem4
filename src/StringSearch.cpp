@@ -11,6 +11,9 @@ string toLowerCase(const string &str)
     return result;
 }
 
+// Knuth-Morris-Pratt (KMP) Pattern Matching Algorithm
+// Preprocessing function to compute longest proper prefix which is also suffix
+// Time Complexity: O(m) where m is pattern length
 vector<int> StringSearch::computeLPSArray(const string &pattern)
 {
     int m = pattern.length();
@@ -44,6 +47,10 @@ vector<int> StringSearch::computeLPSArray(const string &pattern)
     return lps;
 }
 
+// Knuth-Morris-Pratt (KMP) Pattern Matching Algorithm
+// Main KMP algorithm implementation
+// Time Complexity: O(n + m) where n is text length and m is pattern length
+// Used for efficient string pattern matching in user searches
 vector<size_t> StringSearch::KMPSearch(const string &text, const string &pattern)
 {
     vector<size_t> positions;
@@ -58,7 +65,7 @@ vector<size_t> StringSearch::KMPSearch(const string &text, const string &pattern
 
     // Compute LPS array
     int len = 0;
-    int i = 1;
+    size_t i = 1;
     while (i < lowerPattern.length())
     {
         if (lowerPattern[i] == lowerPattern[len])
@@ -83,7 +90,7 @@ vector<size_t> StringSearch::KMPSearch(const string &text, const string &pattern
 
     // Find pattern matches
     i = 0;
-    int j = 0;
+    size_t j = 0;
     while (i < lowerText.length())
     {
         if (lowerPattern[j] == lowerText[i])
@@ -113,6 +120,8 @@ vector<size_t> StringSearch::KMPSearch(const string &text, const string &pattern
     return positions;
 }
 
+// Rabin-Karp Algorithm Helper Functions
+// Used for computing and updating rolling hash values
 long long StringSearch::calculateHash(const string &str, int end)
 {
     long long hash = 0;
@@ -142,6 +151,10 @@ long long StringSearch::calculatePowerValue(int m)
     return h;
 }
 
+// Rabin-Karp String Matching Algorithm
+// Time Complexity: O(n + m) average case, O(nm) worst case
+// where n is text length and m is pattern length
+// Uses rolling hash function for efficient pattern matching
 vector<size_t> StringSearch::RabinKarpSearch(const string &text, const string &pattern)
 {
     vector<size_t> positions;
@@ -158,23 +171,23 @@ vector<size_t> StringSearch::RabinKarpSearch(const string &text, const string &p
     int patternHash = 0;
     int textHash = 0;
 
-    for (int i = 0; i < lowerPattern.length() - 1; i++)
+    for (size_t i = 0; i < lowerPattern.length() - 1; i++)
     {
         h = (h * d) % prime;
     }
 
-    for (int i = 0; i < lowerPattern.length(); i++)
+    for (size_t i = 0; i < lowerPattern.length(); i++)
     {
         patternHash = (d * patternHash + lowerPattern[i]) % prime;
         textHash = (d * textHash + lowerText[i]) % prime;
     }
 
-    for (int i = 0; i <= lowerText.length() - lowerPattern.length(); i++)
+    for (size_t i = 0; i <= lowerText.length() - lowerPattern.length(); i++)
     {
         if (patternHash == textHash)
         {
             bool match = true;
-            for (int j = 0; j < lowerPattern.length(); j++)
+            for (size_t j = 0; j < lowerPattern.length(); j++)
             {
                 if (lowerText[i + j] != lowerPattern[j])
                 {
@@ -238,7 +251,6 @@ vector<User *> StringSearch::searchUsersByInterest(const vector<User *> &users, 
     vector<User *> results;
     for (User *user : users)
     {
-        bool found = false;
         for (const string &interest : user->getInterests())
         {
             vector<size_t> matches = useKMP ? KMPSearch(interest, searchPattern) : RabinKarpSearch(interest, searchPattern);
@@ -246,8 +258,7 @@ vector<User *> StringSearch::searchUsersByInterest(const vector<User *> &users, 
             if (!matches.empty())
             {
                 results.push_back(user);
-                found = true;
-                break;
+                break; // Found a match, no need to check other interests
             }
         }
     }

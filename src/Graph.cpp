@@ -2,6 +2,11 @@
 #include <algorithm>
 #include <limits>
 #include <stack>
+#include <iostream> // Added for cout
+#include <queue>
+#include <unordered_map>
+#include <set>
+#include <vector>
 
 using namespace std;
 
@@ -26,6 +31,8 @@ void Graph::addUser(const string &userId)
         }
         // Set diagonal to 0
         adjacencyMatrix[newSize - 1][newSize - 1] = 0;
+
+        initializeFlowNetworks();
     }
 }
 
@@ -49,6 +56,8 @@ void Graph::addConnection(const string &user1, const string &user2)
         int idx2 = userIndices[user2];
         adjacencyMatrix[idx1][idx2] = 1;
         adjacencyMatrix[idx2][idx1] = 1;
+
+        initializeFlowNetworks();
     }
 }
 
@@ -80,6 +89,8 @@ bool Graph::areConnected(const string &user1, const string &user2) const
     return std::find(adjacencyList.at(user1).begin(), adjacencyList.at(user1).end(), user2) != adjacencyList.at(user1).end();
 }
 
+// Breadth First Search (BFS) algorithm implementation - O(V + E)
+// Used for finding friends at different depths in the social network
 vector<string> Graph::getFriendRecommendations(const string &userId, int depth) const
 {
     vector<string> recommendations;
@@ -114,6 +125,8 @@ vector<string> Graph::getFriendRecommendations(const string &userId, int depth) 
     return recommendations;
 }
 
+// Breadth First Search (BFS) algorithm implementation - O(V + E)
+// Used for traversing the social network level by level
 vector<string> Graph::BFS(const string &startUser) const
 {
     vector<string> result;
@@ -142,6 +155,8 @@ vector<string> Graph::BFS(const string &startUser) const
     return result;
 }
 
+// Depth First Search (DFS) algorithm implementation - O(V + E)
+// Used for exploring social network paths as deeply as possible
 vector<string> Graph::DFS(const string &startUser) const
 {
     vector<string> result;
@@ -213,6 +228,9 @@ void Graph::unionSets(vector<int> &parent, vector<int> &rank, int x, int y)
     }
 }
 
+// Kruskal's Minimum Spanning Tree algorithm with Union-Find data structure
+// Time Complexity: O(E log E) where E is number of edges
+// Used for community detection by treating edge weights as connection strengths
 vector<vector<string>> Graph::detectCommunities(int threshold)
 {
     vector<Edge> edges = getAllEdges();
@@ -257,6 +275,9 @@ vector<vector<string>> Graph::detectCommunities(int threshold)
     return result;
 }
 
+// Floyd-Warshall Algorithm for All-Pairs Shortest Paths
+// Time Complexity: O(V^3) where V is number of vertices
+// Used to find shortest paths (degrees of separation) between all pairs of users
 vector<vector<int>> Graph::floydWarshall() const
 {
     int V = users.size();
@@ -294,4 +315,224 @@ const vector<string> &Graph::getUsers() const
 int Graph::getUserCount() const
 {
     return users.size();
+}
+
+// Initialize flow networks when adding users or connections
+void Graph::initializeFlowNetworks()
+{
+    int n = users.size();
+    // Reset matrices with proper sizes
+    capacityMatrix = vector<vector<int>>(n, vector<int>(n, 0));
+    flowMatrix = vector<vector<int>>(n, vector<int>(n, 0));
+
+    // Set capacity 1 for ALL connections in the adjacency list
+    for (const auto &[user, friends] : adjacencyList)
+    {
+        int u = userIndices[user];
+        for (const auto &friend_ : friends)
+        {
+            int v = userIndices[friend_];
+            // Set both directions since the network is undirected
+            capacityMatrix[u][v] = 1;
+            capacityMatrix[v][u] = 1;
+        }
+    }
+}
+
+// Ford-Fulkerson implementation using BFS for finding augmenting paths
+bool Graph::bfs(int source, int sink, vector<int> &parent)
+{
+    int V = users.size();
+    vector<bool> visited(V, false);
+    queue<int> q;
+
+    q.push(source);
+    visited[source] = true;
+    parent[source] = -1;
+
+    while (!q.empty())
+    {
+        int u = q.front();
+        q.pop();
+
+        for (int v = 0; v < V; v++)
+        {
+            if (!visited[v] && capacityMatrix[u][v] > flowMatrix[u][v])
+            {
+                q.push(v);
+                parent[v] = u;
+                visited[v] = true;
+            }
+        }
+    }
+
+    return visited[sink];
+}
+
+// Helper function to visualize network flow
+string Graph::getFlowVisualization(int source, int sink, const vector<vector<int>> &flow) const
+{
+    string result = "\nNetwork Flow Visualization:\n";
+    result += "Each line shows: user -> user (flow/capacity)\n\n";
+
+    for (size_t i = 0; i < users.size(); i++)
+    {
+        for (size_t j = 0; j < users.size(); j++)
+        {
+            if (capacityMatrix[i][j] > 0)
+            {
+                string arrow = (static_cast<int>(i) == source || static_cast<int>(j) == sink) ? "=>" : "->";
+                result += users[i] + " " + arrow + " " + users[j] +
+                          " (" + to_string(flow[i][j]) + "/" +
+                          to_string(capacityMatrix[i][j]) + ")\n";
+            }
+        }
+    }
+    return result;
+}
+
+void Graph::printAugmentingPath(const vector<int> &parent, int source, int sink) const
+{
+    cout << "Found augmenting path: ";
+    vector<int> path;
+    for (int v = sink; v != source; v = parent[v])
+    {
+        path.push_back(v);
+    }
+    path.push_back(source);
+
+    for (int i = path.size() - 1; i >= 0; i--)
+    {
+        cout << users[path[i]];
+        if (i > 0)
+            cout << " -> ";
+    }
+    cout << "\n";
+}
+
+// Update the Ford-Fulkerson maxFlow implementation to show visualization
+int Graph::maxFlow(int source, int sink)
+{
+    vector<int> parent(users.size());
+    int maxFlow = 0;
+
+    cout << "\nStarting Ford-Fulkerson algorithm for message routing...\n";
+    cout << getFlowVisualization(source, sink, flowMatrix);
+
+    // While there is an augmenting path from source to sink
+    int pathCount = 0;
+    while (bfs(source, sink, parent))
+    {
+        pathCount++;
+        cout << "\nStep " << pathCount << ":\n";
+        printAugmentingPath(parent, source, sink);
+
+        int pathFlow = numeric_limits<int>::max();
+
+        // Find minimum residual capacity along the path
+        for (int v = sink; v != source; v = parent[v])
+        {
+            int u = parent[v];
+            pathFlow = min(pathFlow, capacityMatrix[u][v] - flowMatrix[u][v]);
+        }
+
+        cout << "Path capacity: " << pathFlow << "\n";
+
+        // Update residual capacities and reverse edges
+        for (int v = sink; v != source; v = parent[v])
+        {
+            int u = parent[v];
+            flowMatrix[u][v] += pathFlow;
+            flowMatrix[v][u] -= pathFlow;
+        }
+
+        maxFlow += pathFlow;
+        cout << getFlowVisualization(source, sink, flowMatrix);
+    }
+
+    cout << "\nFinal maximum flow: " << maxFlow << "\n";
+    return maxFlow;
+}
+
+// Dynamic Programming for finding optimal message path
+// Uses Floyd-Warshall results to find path with minimum hops
+vector<string> Graph::findOptimalMessagePath(const string &fromUser, const string &toUser)
+{
+    vector<string> path;
+    if (adjacencyList.find(fromUser) == adjacencyList.end() ||
+        adjacencyList.find(toUser) == adjacencyList.end())
+    {
+        return path;
+    }
+
+    int start = userIndices[fromUser];
+    int end = userIndices[toUser];
+
+    // Get shortest paths using Floyd-Warshall
+    auto distances = floydWarshall();
+
+    // Use DP to reconstruct the path
+    vector<vector<int>> next(users.size(), vector<int>(users.size(), -1));
+
+    // Initialize next matrix
+    for (size_t i = 0; i < users.size(); i++)
+    {
+        for (size_t j = 0; j < users.size(); j++)
+        {
+            if (distances[i][j] != numeric_limits<int>::max())
+            {
+                next[i][j] = j;
+            }
+        }
+    }
+
+    // Find path using next matrix
+    if (distances[start][end] == numeric_limits<int>::max())
+    {
+        return path; // No path exists
+    }
+
+    // Reconstruct path
+    int current = start;
+    path.push_back(users[current]);
+    while (current != end)
+    {
+        current = next[current][end];
+        path.push_back(users[current]);
+    }
+
+    return path;
+}
+
+// Update sendMessage to show the visualization
+bool Graph::sendMessage(const string &fromUser, const string &toUser, const string &message [[maybe_unused]])
+{
+    if (adjacencyList.find(fromUser) == adjacencyList.end() ||
+        adjacencyList.find(toUser) == adjacencyList.end())
+    {
+        return false;
+    }
+
+    cout << "\nAttempting to send message from " << fromUser << " to " << toUser << "...\n";
+
+    initializeFlowNetworks();
+    int source = userIndices[fromUser];
+    int sink = userIndices[toUser];
+
+    cout << "\nInitial network state:\n";
+    cout << getFlowVisualization(source, sink, flowMatrix);
+
+    // Check if message can be routed (max flow > 0)
+    int flow = maxFlow(source, sink);
+
+    if (flow > 0)
+    {
+        cout << "\nMessage can be routed! Maximum possible simultaneous messages: " << flow << "\n";
+        return true;
+    }
+    else
+    {
+        cout << "\nNo valid path exists for the message.\n";
+        return false;
+    }
 }
